@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DiagramOTrOn 🤖</title>
+  <style>
+    :root {
+        --bg-color: #f0f2f5;
+        --text-color: #1c1e21;
+        --panel-bg-color: #fff;
+        --border-color: #dddfe2;
+        --label-color: #606770;
+        --input-bg-color: #fff;
+    }
+
+    body.night-mode {
+        --bg-color: #18191a;
+        --text-color: #e4e6eb;
+        --panel-bg-color: #242526;
+        --border-color: #3a3b3c;
+        --label-color: #b0b3b8;
+        --input-bg-color: #3a3b3c;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #main-container {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      justify-content: center;
+    }
+    #controls-container {
+      display: flex;
+      flex-direction: column;
+      width: 320px;
+      padding: 20px;
+      background-color: var(--panel-bg-color);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #controls-container h3 {
+        margin-top: 0;
+    }
+    #controls-container div {
+        margin-bottom: 15px;
+    }
+    #controls-container label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: var(--label-color);
+    }
+    #controls-container input,
+    #controls-container textarea,
+    #controls-container button {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        box-sizing: border-box;
+        background-color: var(--input-bg-color);
+        color: var(--text-color);
+    }
+    #controls-container textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    #controls-container button {
+        background-color: #1877f2;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    #controls-container button:hover {
+        background-color: #166fe5;
+    }
+    #download-svg {
+        background-color: #42b72a !important;
+    }
+    #download-svg:hover {
+        background-color: #36a420 !important;
+    }
+    #error-log {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        color: #fa383e;
+        font-size: 12px;
+        margin-top: 10px;
+    }
+    canvas {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #canvas-and-message-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center items horizontally */
+      gap: 20px; /* Space between canvas and message box */
+    }
+    #message-box {
+      width: 100%; /* Fill the width of the parent container */
+      padding: 15px;
+      background-color: var(--panel-bg-color);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-size: 0.9em; /* Smaller font size */
+      color: var(--text-color);
+    }
+    #message-box pre {
+      white-space: pre-wrap; /* Respect newlines and wrap long lines */
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Monospace font */
+      font-size: 0.8em; /* Even smaller font size for code */
+      text-align: left; /* Align code to the left */
+      margin: 0; /* Remove default margin */
+      padding: 0; /* Remove default padding */
+    }
+  </style>
+</head>
+<body>
+  <h1>DiagramOTrOn 🤖</h1>
+
+  <div id="main-container">
+    <div id="controls-container">
+      <button id="night-mode-toggle" style="margin-bottom: 20px; background-color: #606770;">Toggle Night Mode</button>
+      <h3>Apply changes with AI</h3>
+      <p style="font-size: 12px; color: var(--label-color); margin-top: -10px;"><strong>Warning:</strong> For local testing only.</p>
+      <div>
+        <label for="api-key">Gemini API Key:</label>
+        <input type="password" id="api-key" placeholder="Enter your API key">
+      </div>
+      <div>
+        <label for="prompt">Prompt:</label>
+        <textarea id="prompt" placeholder="e.g., 'make a purple box'"></textarea>
+      </div>
+      <div>
+        <label for="object-label">Selected Object Label:</label>
+        <input type="text" id="object-label" placeholder="No object selected">
+      </div>
+      <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <input type="checkbox" id="show-code-checkbox" style="width: auto; margin-right: 10px;">
+        <label for="show-code-checkbox" style="margin-bottom: 0;">Show Full Code Response</label>
+      </div>
+      <button id="run-ace-code" style="display: none; margin-bottom: 15px;">Run Code from Editor</button>
+      <button id="apply-changes"></button>
+      <button id="undo" style="background-color: #f5a623; margin-top: 10px;">Undo (Cmd+Z)</button>
+      <hr style="width:100%; border: none; border-top: 1px solid var(--border-color); margin: 20px 0;">
+      <button id="share-link">Create Shareable Link</button>
+      <button id="download-svg" style="margin-top: 10px;">Download as SVG</button>
+    </div>
+
+    <div id="canvas-and-message-container">
+      <canvas id="canvas" width="800" height="600"></canvas>
+      <div id="general-message-box" style="display: none; width: 100%; padding: 15px; background-color: var(--panel-bg-color); border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); text-align: center; font-size: 0.9em; color: var(--text-color);"></div>
+      <div id="ace-editor-container" style="display: none; height: 200px; width: 800px;"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
