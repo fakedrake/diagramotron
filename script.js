@@ -326,6 +326,15 @@ function initializeAceEditor() {
             wrap: true // Wrap long lines
         });
 
+        // Add a custom command for Cmd+Enter to trigger the apply button
+        aceEditor.commands.addCommand({
+            name: "applyChanges",
+            bindKey: {win: "Ctrl-Enter", mac: "Command-Enter"},
+            exec: function(editor) {
+                runAceCodeButton.click();
+            }
+        });
+
     }
 }
 
@@ -381,5 +390,34 @@ promptInput.addEventListener('keydown', function(event) {
     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault(); // Prevent new line in textarea
         applyButton.click(); // Trigger the button click
+    }
+});
+
+window.addEventListener('keydown', function(event) {
+    const activeElement = document.activeElement;
+    const isTyping = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
+
+    // Undo Shortcut
+    if ((event.metaKey || event.ctrlKey) && event.key === 'z') {
+        event.preventDefault();
+        undo();
+        return;
+    }
+
+    // Check if the user is typing in an input field for the delete shortcut
+    if (isTyping) {
+        return;
+    }
+
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault(); // Prevents browser from going back
+        const activeObjects = canvas.getActiveObjects();
+        if (activeObjects.length > 0) {
+            activeObjects.forEach(obj => {
+                canvas.remove(obj);
+            });
+            canvas.discardActiveObject();
+            canvas.renderAll();
+        }
     }
 });
